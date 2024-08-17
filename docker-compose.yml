@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  tarantool:
+    image: tarantool_vk
+    container_name: tarantool_vk_container
+    environment:
+      TARANTOOL_INSTANCE_NAME: vk_test
+      TARANTOOL_USER: admin
+      TARANTOOL_PASSWORD: secret
+    ports:
+      - "3301:3301"
+    volumes:
+      - ./data:/var/lib/tarantool
+    command: tarantool
