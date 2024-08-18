@@ -1,5 +1,14 @@
-FROM tarantool/tarantool:latest
+# Use the official Tarantool image as the base
+FROM tarantool/tarantool:2.10.5
 
+# Set the working directory inside the container
+WORKDIR /opt/tarantool
+
+# Copy the init.lua configuration file to the container
 COPY init.lua /opt/tarantool/init.lua
 
+# Expose the port that Tarantool will listen on
+EXPOSE 3301
+
+# Start Tarantool with the provided configuration file
 CMD ["tarantool", "/opt/tarantool/init.lua"]

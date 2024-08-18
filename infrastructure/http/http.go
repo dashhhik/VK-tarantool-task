@@ -47,7 +47,7 @@ func NewHTTPServer(handlerContainer HandlerContainer, cfg fiber.Config, logger *
 	app := fiber.New(cfg)
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, User-Agent",
 		AllowMethods: "POST",
 	}))
 

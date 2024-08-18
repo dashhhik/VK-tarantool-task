@@ -21,7 +21,10 @@ func NewApp(container *http.HandlerContainer, logger *zap.Logger) *App {
 func main() {
 	app, err := InitializeApp()
 	if err != nil {
-		app.Logger.Error("error initializing app", zap.Error(err))
+		logger, _ := zap.NewProduction()
+		defer logger.Sync()
+
+		logger.Error("error initializing app", zap.Error(err))
 		return
 	}
 	http.NewHTTPServer(*app.HTTPHandlers, fiber.Config{}, app.Logger)

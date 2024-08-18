@@ -2,14 +2,41 @@ version: '3.9'
 
 services:
   tarantool:
-    image: tarantool_vk
+    build:
+      context: .
+      dockerfile: Dockerfile.tarantool
     container_name: tarantool_vk_container
     environment:
-      TARANTOOL_INSTANCE_NAME: vk_test
-      TARANTOOL_USER: admin
-      TARANTOOL_PASSWORD: secret
+      - TARANTOOL_USER=admin
+      - TARANTOOL_PASSWORD=presale
     ports:
       - "3301:3301"
     volumes:
       - ./data:/var/lib/tarantool
-    command: tarantool
+    networks:
+      - vk
+#    healthcheck:
+#      test: [ "CMD", "nc", "-z", "localhost", "3301" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    depends_on:
+#      tarantool:
+#        condition: service_healthy
+#        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - vk
+    depends_on:
+      - tarantool
+
+
+networks:
+  vk:
+    driver: bridge
