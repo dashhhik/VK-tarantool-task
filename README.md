@@ -1,56 +1,168 @@
-# ![RealWorld Example App](logo.png)
+## Инструкция по запуску решения
 
-> ### Fiber + SQLC codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+```commandline
+docker-compose up --build
+```
+
+### Общие ответы API
+Все эндпоинты возвращают ответы в формате JSON.
+
+- `200 OK`: Запрос выполнен успешно.
+- `400 Bad Request`: Ошибка в структуре или формате запроса.
+- `500 Internal Server Error`: Внутренняя ошибка сервера.
+
+## Endpoints
+
+### Авторизация
+
+#### `POST /login`
+Авторизует пользователя по переданным данным.
+
+**Request:**
+```json
+{
+  "username": "example_username",
+  "password": "example_password"
+}
+```
+
+Response (200):
+```json
+{
+  "token": "jwt_token"
+}
+```
+
+Response (400):
+```json
+{
+   "error": "invalid request body"
+}
+
+```
+
+Response (500):
+```json
+{
+   "error": "invalid request body"
+}
+
+```
+
+Response (401):
+
+```json
+{
+"error": "authentication failed"
+}
+```
+
+Response (500):
+
+```json
+{
+   "error": "internal server error"
+}
+
+```
+
+Описание:
+
+Параметры передаются в теле запроса и должны содержать username и password.
+При успешной авторизации возвращается JWT-токен. Имеется пользователь admin с паролем presale.
+
+### Чтение данных
+#### POST /read
+Читает данные по указанным ключам.
+
+**Request:**
+```json
+{
+   "keys": ["key1", "key2", "key3"]
+}
+
+```
+
+Response (200):
+```json
+{
+   "data": {
+      "key1": "value1",
+      "key2": "value2",
+      "key3": "value3"
+   }
+}
+```
+
+Response (400):
+```json
+{
+   "error": "Invalid request format"
+}
+```
+
+Response (500):
+```json
+{
+   "error": "Internal server error"
+}
+
+```
 
 
-### [Demo](https://demo.realworld.io/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
+
+Описание:
+
+Параметры передаются в теле запроса и должны содержать массив ключей keys.
+Возвращает данные по указанным ключам в случае успешного выполнения.
+Если в запросе отсутствуют ключи, возвращается ошибка с кодом 400.
+При возникновении внутренней ошибки сервера возвращается код 500.
+
+### Запись данных
+#### POST /write
+Читает данные по указанным ключам.
+
+**Request:**
+```json
+{
+   "data": {
+      "key1": "value1",
+      "key2": "value2",
+      "key3": "value3"
+   }
+}
 
 
-This codebase was created to demonstrate a fully fledged fullstack application built with **Fiber + SQLC** including CRUD operations, authentication, routing, pagination, and more.
+```
 
-We've gone to great lengths to adhere to the **Fiber + SQLC** community styleguides & best practices.
+Response (200):
+```json
+{
+   "status": "success"
+}
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+```
 
+Response (400):
+```json
+{
+   "error": "Invalid request structure"
+}
+```
 
-# How it works
+Response (500):
+```json
+{
+   "error": "Internal server error"
+}
 
-The RealWorld Fiber SQLC application is a backend example app demonstrating best practices for CRUD operations, authentication, and more, adhering to the RealWorld specification.
-
-### Backend
-- **Language**: Go
-- **Framework**: Fiber
-- **Database**: PostgreSQL
-- **SQL Queries**: sqlc (generates type-safe code from SQL)
-
-### Structure
-- **cmd/realworld**: Entry point of the application.
-- **internal**: Core application logic, including handlers, middleware, and database interactions.
-- **pkg**: Reusable packages.
-- **usecase/dto**: Data transfer objects for use cases.
-
-### Deployment
-- **Docker**: Utilizes Docker and Docker Compose for containerization.
-
-### Configuration
-- **sqlc.yaml**: Configuration for sqlc to generate Go code from SQL queries.
-- **docker-compose.yml**: Configuration for Docker Compose to set up the application's services.
-
-### Additional Features
-- **Routing**: Managed by Fiber.
-- **Authentication**: JWT-based authentication.
-- **Testing**: Simple unit test.
-
-# Getting started
-
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/dashhhik/realworld-fiber-sqlc.git
-   cd realworld-fiber-sqlc
-
-2. Build and run the services using Docker Compose:
-   ```sh
-   docker-compose up --build
-   ```
+```
 
 
+
+Описание:
+
+Параметры передаются в теле запроса и должны содержать объект data, в котором ключи соответствуют значениям, которые необходимо записать.
+При успешной записи данных возвращается статус success.
+Если структура запроса некорректна, возвращается ошибка с кодом 400.
+В случае внутренней ошибки сервера возвращается код 500.
