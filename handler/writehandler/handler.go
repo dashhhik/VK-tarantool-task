@@ -1,6 +1,11 @@
 package writehandler
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"VK-test/core"
+	"errors"
+	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
+)
 
 type WriterService interface {
 	Write(data map[string]interface{}) error
@@ -8,33 +13,46 @@ type WriterService interface {
 
 type Handler struct {
 	Writer WriterService
+	Logger *zap.Logger
 }
 
-func NewHandler(writer WriterService) *Handler {
-	return &Handler{Writer: writer}
+func NewHandler(writer WriterService, logger *zap.Logger) *Handler {
+	return &Handler{
+		Writer: writer,
+		Logger: logger,
+	}
 }
 
-func (h Handler) Write(c *fiber.Ctx) error {
+func (h *Handler) Write(c *fiber.Ctx) error {
 	var data interface{}
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+		h.Logger.Error("Failed to parse request body", zap.Error(err))
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request format"})
 	}
 
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid request structure"})
+		h.Logger.Error("Request body is not a valid JSON object")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request structure"})
 	}
 
 	innerData, ok := dataMap["data"].(map[string]interface{})
 	if !ok {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid 'data' field structure"})
+		h.Logger.Error("'data' field is missing or not a valid JSON object")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid 'data' field structure"})
 	}
 
 	if err := h.Writer.Write(innerData); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Internal server error"})
+		var customErr *core.CustomError
+		if errors.As(err, &customErr) {
+			h.Logger.Warn("Error writing data", zap.Error(err))
+			return c.Status(customErr.Code).JSON(fiber.Map{"error": customErr.Message})
+		}
+
+		h.Logger.Error("Failed to write data", zap.Error(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
 	}
 
-	return c.Status(200).JSON(
-		fiber.Map{"status": "success"})
-
+	h.Logger.Info("Data written successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }

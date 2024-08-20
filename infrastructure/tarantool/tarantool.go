@@ -8,11 +8,11 @@ import (
 )
 
 func NewTarantoolClient() *tarantool.Connection {
-	time.Sleep(3 * time.Second)
+	//time.Sleep(3 * time.Second)
 	dialer := tarantool.NetDialer{
-		User:     "admin",
-		Password: "presale",
-		Address:  "tarantool:3301",
+		User: "guest",
+		//Password: "admin",
+		Address: "tarantool:3301",
 	}
 
 	opts := tarantool.Opts{

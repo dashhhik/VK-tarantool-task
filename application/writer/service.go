@@ -1,6 +1,10 @@
 package writer
 
-import "sync"
+import (
+	"fmt"
+	"strings"
+	"sync"
+)
 
 type KeyValueRepo interface {
 	Set(key string, value interface{}) error
@@ -22,6 +26,7 @@ func (s Service) Write(data map[string]interface{}) error {
 
 func (s Service) processMap(data map[string]interface{}) error {
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 	errChan := make(chan error, len(data))
 
 	for key, value := range data {
@@ -29,7 +34,9 @@ func (s Service) processMap(data map[string]interface{}) error {
 		go func(k string, v interface{}) {
 			defer wg.Done()
 			if err := s.UserRepo.Set(k, v); err != nil {
-				errChan <- err
+				mu.Lock()
+				errChan <- fmt.Errorf("failed to set key %s: %w", k, err)
+				mu.Unlock()
 			}
 		}(key, value)
 	}
@@ -37,10 +44,15 @@ func (s Service) processMap(data map[string]interface{}) error {
 	wg.Wait()
 	close(errChan)
 
+	var combinedErrors []string
 	for err := range errChan {
 		if err != nil {
-			return err
+			combinedErrors = append(combinedErrors, err.Error())
 		}
+	}
+
+	if len(combinedErrors) > 0 {
+		return fmt.Errorf("multiple errors occurred: %s", strings.Join(combinedErrors, "; "))
 	}
 
 	return nil

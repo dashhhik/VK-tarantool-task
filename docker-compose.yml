@@ -1,25 +1,17 @@
-version: '3.9'
+version: '3.7'
 
 services:
   tarantool:
-    build:
-      context: .
-      dockerfile: Dockerfile.tarantool
-    container_name: tarantool_vk_container
-    environment:
-      - TARANTOOL_USER=admin
-      - TARANTOOL_PASSWORD=presale
+    image: tarantool/tarantool
+    container_name: tarantool
     ports:
       - "3301:3301"
     volumes:
-      - ./data:/var/lib/tarantool
+      - ./init.lua:/opt/tarantool/init.lua
+    command: tarantool /opt/tarantool/init.lua
+    restart: unless-stopped
     networks:
       - vk
-#    healthcheck:
-#      test: [ "CMD", "nc", "-z", "localhost", "3301" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
 
   api:
     build:

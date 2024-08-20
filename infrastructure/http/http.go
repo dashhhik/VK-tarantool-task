@@ -39,8 +39,8 @@ func NewHandlerContainer(authHandler AuthHandler, writeHandler WriteHandler, rea
 
 func registerRoutes(container HandlerContainer, app *fiber.App) {
 	app.Post("/api/login", container.Auth.Login)
-	app.Post("/api/writer", container.Write.Write, middleware.Protected())
-	app.Post("/api/reader", container.Read.Read, middleware.Protected())
+	app.Post("/api/write", container.Write.Write, middleware.Protected())
+	app.Post("/api/read", container.Read.Read, middleware.Protected())
 }
 
 func NewHTTPServer(handlerContainer HandlerContainer, cfg fiber.Config, logger *zap.Logger) {
